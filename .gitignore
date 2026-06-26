@@ -1,0 +1,22 @@
+# Dependências do Node (nunca devem ir para o GitHub)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Banco de dados local e dados persistentes (Segurança e Integridade)
+pacman-data/
+*.db
+*.db-wal
+*.db-shm
+
+# Arquivos de configuração do ambiente local e chaves
+.env
+.env.local
+.env.production
+.vscode/
+.idea/
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db

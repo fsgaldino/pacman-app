@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pac-Man Retrô</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      color: #fff;
+      font-family: 'Courier New', monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* ── Tela de autenticação ── */
+    #auth-screen {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    .auth-box {
+      background: #111;
+      border: 2px solid #ffcc00;
+      border-radius: 8px;
+      padding: 32px 40px;
+      width: 340px;
+      text-align: center;
+      box-shadow: 0 0 30px rgba(255,204,0,.15);
+    }
+
+    .auth-box h1 {
+      font-size: 36px;
+      color: #ffcc00;
+      letter-spacing: 6px;
+      margin-bottom: 24px;
+      text-shadow: 0 0 10px #ffcc00;
+    }
+
+    #auth-tabs { display: flex; gap: 0; margin-bottom: 20px; }
+    .tab {
+      flex: 1;
+      padding: 8px;
+      background: #222;
+      border: 1px solid #333;
+      color: #888;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      transition: .2s;
+    }
+    .tab.active { background: #ffcc00; color: #111; border-color: #ffcc00; font-weight: bold; }
+    .tab:first-child { border-radius: 4px 0 0 4px; }
+    .tab:last-child  { border-radius: 0 4px 4px 0; }
+
+    .auth-box input {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      color: #fff;
+      font-family: inherit;
+      font-size: 14px;
+      border-radius: 4px;
+      outline: none;
+      transition: border .2s;
+    }
+    .auth-box input:focus { border-color: #ffcc00; }
+
+    .auth-box button[type="submit"] {
+      width: 100%;
+      padding: 10px;
+      background: #ffcc00;
+      color: #111;
+      border: none;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: .2s;
+    }
+    .auth-box button[type="submit"]:hover { background: #ffdd33; }
+    .error { color: #ff4444; font-size: 13px; margin-top: 8px; min-height: 20px; }
+    .success { color: #44ff44; font-size: 13px; margin-top: 8px; }
+
+    /* ── Tela do jogo ── */
+    #game-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 20px;
+    }
+
+    #game-header {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      font-size: 16px;
+      color: #ffcc00;
+      letter-spacing: 1px;
+    }
+    #game-header span { min-width: 120px; text-align: center; }
+
+    #logout-btn {
+      padding: 6px 16px;
+      background: #333;
+      color: #ffcc00;
+      border: 1px solid #ffcc00;
+      border-radius: 4px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: .2s;
+    }
+    #logout-btn:hover { background: #ffcc00; color: #111; }
+
+    #game-canvas {
+      border: 2px solid #2121de;
+      border-radius: 4px;
+      image-rendering: pixelated;
+      background: #000;
+    }
+
+    #high-scores {
+      width: 420px;
+      max-height: 180px;
+      overflow-y: auto;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 12px 16px;
+    }
+    #high-scores h3 {
+      color: #ffcc00;
+      font-size: 14px;
+      margin-bottom: 8px;
+      letter-spacing: 2px;
+    }
+    #scores-list {
+      list-style: decimal inside;
+      color: #aaa;
+      font-size: 13px;
+    }
+    #scores-list li {
+      padding: 2px 0;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    #scores-list li:last-child { border: none; }
+
+    #game-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: rgba(0,0,0,.75);
+      color: #fff;
+      font-size: 28px;
+      letter-spacing: 3px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .3s;
+    }
+    #game-overlay.show { opacity: 1; pointer-events: auto; }
+    #game-overlay small { font-size: 14px; color: #ffcc00; margin-top: 12px; }
+  </style>
+</head>
+<body>
+
+  <!-- ─── AUTH SCREEN ─── -->
+  <div id="auth-screen">
+    <div class="auth-box">
+      <h1>PAC-MAN</h1>
+      <div id="auth-tabs">
+        <button class="tab active" data-tab="login">Login</button>
+        <button class="tab" data-tab="register">Registrar</button>
+      </div>
+
+      <form id="login-form">
+        <input type="email" id="login-email" placeholder="E-mail" required autocomplete="email">
+        <input type="password" id="login-pass" placeholder="Senha" minlength="6" required autocomplete="current-password">
+        <button type="submit">Entrar</button>
+        <p id="login-error" class="error"></p>
+      </form>
+
+      <form id="register-form" style="display:none">
+        <input type="email" id="reg-email" placeholder="E-mail" required autocomplete="email">
+        <input type="password" id="reg-pass" placeholder="Senha (mín. 6 caracteres)" minlength="6" required autocomplete="new-password">
+        <button type="submit">Criar Conta</button>
+        <p id="reg-error" class="error"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ─── GAME SCREEN ─── -->
+  <div id="game-screen">
+    <div id="game-header">
+      <span>🏆 <span id="score-display">0</span></span>
+      <span>❤️ <span id="lives-display">3</span></span>
+      <span>🎯 <span id="level-display">1</span></span>
+      <button id="logout-btn">Sair</button>
+    </div>
+    <div style="position:relative">
+      <canvas id="game-canvas" width="420" height="420"></canvas>
+      <div id="game-overlay">
+        <span id="overlay-text">GAME OVER</span>
+        <small id="overlay-hint">Pressione ESPAÇO para jogar novamente</small>
+      </div>
+    </div>
+    <div id="high-scores">
+      <h3>🏅 HIGH SCORES</h3>
+      <ol id="scores-list"></ol>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

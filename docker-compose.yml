@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  pacman:
+    build: .
+    environment:
+      - PORT=3000
+      - DB_PATH=/opt/pacman-data/production.db
+    volumes:
+      - ./pacman-data:/opt/pacman-data

@@ -23,14 +23,43 @@
 - [Mecânica do Jogo](#mecânica-do-jogo)
 - [Sons Sintetizados](#sons-sintetizados)
 - [Dockerização](#dockerização)
-- [Testes](#testes)
-- [Deploy](#deploy)
-- [Créditos](#créditos)
+- [Variáveis de Ambiente](#variáveis-de-ambiente)
+- [Possíveis Melhorias](#possíveis-melhorias)
+- [Licença](#licença)
 
 ---
 
 ## Arquitetura
-┌─────────────────────────────────────────────────────────┐ │ Navegador │ │ ┌──────────┐ ┌──────────┐ ┌────────────────────┐ │ │ │ index.html│ │ game.js │ │ Web Audio API │ │ │ │ (UI/Login)│ │ (Motor) │ │ (Sons sintetizados)│ │ │ └──────────┘ └──────────┘ └────────────────────┘ │ │ │ │ │ │ └───────┬───────┘ │ │ │ fetch() │ └─────────────────┼────────────────────────────────────────┘ │ ▼ ┌─────────────────────────────────────────────────────────┐ │ Node.js (server.js) │ │ ┌──────────┐ ┌────────────┐ ┌──────────────────┐ │ │ │ Express │ │ bcryptjs │ │ better-sqlite3 │ │ │ │ (REST) │ │ (hash senha)│ │ (queries param.) │ │ │ └──────────┘ └────────────┘ └──────────────────┘ │ │ │ │ │ ▼ │ │ ┌──────────────┐ │ │ │ SQLite DB │ │ │ │ (users, │ │ │ │ sessions, │ │ │ │ scores) │ │ │ └──────────────┘ │ └─────────────────────────────────────────────────────────┘
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                     Navegador                            │
+│  ┌──────────┐   ┌──────────┐   ┌────────────────────┐  │
+│  │ index.html│   │ game.js  │   │ Web Audio API     │  │
+│  │ (UI/Login)│   │ (Motor)  │   │ (Sons sintetizados)│  │
+│  └──────────┘   └──────────┘   └────────────────────┘  │
+│         │               │                                │
+│         └───────┬───────┘                                │
+│                 │ fetch()                                │
+└─────────────────┼────────────────────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────────────────────┐
+│                 Node.js (server.js)                      │
+│  ┌──────────┐   ┌────────────┐   ┌──────────────────┐  │
+│  │ Express   │   │ bcryptjs   │   │ better-sqlite3   │  │
+│  │ (REST)    │   │ (hash senha)│   │ (queries param.) │  │
+│  └──────────┘   └────────────┘   └──────────────────┘  │
+│                                      │                   │
+│                                      ▼                   │
+│                              ┌──────────────┐            │
+│                              │  SQLite DB   │            │
+│                              │ (users,      │            │
+│                              │  sessions,   │            │
+│                              │  scores)     │            │
+│                              └──────────────┘            │
+└─────────────────────────────────────────────────────────┘
+```
 
 ### Stack
 
@@ -105,10 +134,13 @@ npm start
 
 # 4. Acesse no navegador
 #    → http://localhost:3000
+```
 
-O banco SQLite será criado automaticamente em ./data/pacman.db.
+O banco SQLite será criado automaticamente em `./data/pacman.db`.
 
-Com Docker
+### Com Docker
+
+```bash
 # 1. Build e execute com Docker Compose
 docker compose up -d --build
 
@@ -117,10 +149,15 @@ docker compose up -d --build
 
 # Para parar:
 docker compose down
+```
 
-O banco de dados será persistido em ./pacman-data/production.db no host.
+O banco de dados será persistido em `./pacman-data/production.db` no host.
 
-Estrutura de Arquivos
+---
+
+## Estrutura de Arquivos
+
+```
 pacman-app/
 ├── package.json          # Dependências e scripts
 ├── server.js             # Servidor Express + SQLite + API
@@ -130,130 +167,194 @@ pacman-app/
 ├── Dockerfile            # Build da imagem Node Alpine
 ├── docker-compose.yml    # Orquestração do contêiner
 └── pacman-data/          # (criado automaticamente) Banco SQLite persistido
-API REST
-Toda a API é servida em http://localhost:3000/api/.
+```
 
-Autenticação
-Método	Rota	Corpo	Resposta
-POST	/api/register	{ email, password }	{ token, email }
-POST	/api/login	{ email, password }	{ token, email }
-POST	/api/logout	— (Bearer token)	{ ok: true }
-GET	/api/me	— (Bearer token)	{ id, email, created_at }
-Pontuação
-Método	Rota	Autenticação	Corpo/Query	Resposta
-GET	/api/scores	❌	?limit=10	[{score, player_email, created_at}]
-POST	/api/scores	✅ Bearer	{ score }	{ ok: true }
-Exemplo de requisição autenticada:
+---
 
+## API REST
 
-POST /api/scores
-Authorization: Bearer <seu-token>
-Content-Type: application/json
+Toda a API é servida em `http://localhost:3000/api/`.
 
-{ "score": 12500 }
-Códigos de Erro
-Status	Significado
-400	Dados inválidos (e-mail, senha, score)
-401	Token ausente ou inválido
-409	E-mail já cadastrado
-500	Erro interno do servidor
-Segurança
-SQL Injection — Zero
-Todas as queries usam prepared statements do better-sqlite3. Nenhuma string é concatenada em SQL:
+### Autenticação
 
+| Método | Rota             | Corpo                         | Resposta                    |
+|--------|------------------|-------------------------------|-----------------------------|
+| POST   | `/api/register`  | `{ email, password }`         | `{ token, email }`          |
+| POST   | `/api/login`     | `{ email, password }`         | `{ token, email }`          |
+| POST   | `/api/logout`    | — (Bearer token)              | `{ ok: true }`              |
+| GET    | `/api/me`        | — (Bearer token)              | `{ id, email, created_at }` |
 
+### Pontuação
+
+| Método | Rota             | Autenticação | Corpo/Query              | Resposta                    |
+|--------|------------------|--------------|--------------------------|-----------------------------|
+| GET    | `/api/scores`    | ❌           | `?limit=10`              | `[{score, player_email, created_at}]` |
+| POST   | `/api/scores`    | ✅ Bearer    | `{ score }`              | `{ ok: true }`              |
+
+> **Exemplo de requisição autenticada:**
+> ```http
+> POST /api/scores
+> Authorization: Bearer <seu-token>
+> Content-Type: application/json
+>
+> { "score": 12500 }
+> ```
+
+### Códigos de Erro
+
+| Status | Significado                    |
+|--------|--------------------------------|
+| 400    | Dados inválidos (e-mail, senha, score) |
+| 401    | Token ausente ou inválido      |
+| 409    | E-mail já cadastrado           |
+| 500    | Erro interno do servidor       |
+
+---
+
+## Segurança
+
+### SQL Injection — Zero
+
+Todas as queries usam **prepared statements** do `better-sqlite3`. Nenhuma string é concatenada em SQL:
+
+```javascript
 // ❌ NUNCA — vulnerável a SQL Injection
 db.run(`SELECT * FROM users WHERE email = '${email}'`);
 
 // ✅ SEMPRE — queries parametrizadas
 db.prepare('SELECT * FROM users WHERE email = ?').get(email);
-Senhas — bcrypt com cost factor 12
+```
 
-const hash = bcrypt.hashSync(password, 12);    // ~250ms por hash
+### Senhas — bcrypt com cost factor 12
+
+```javascript
+const hash = bcrypt.hashSync(password, 12);       // ~250ms por hash
 const match = bcrypt.compareSync(password, hash);  // verificação segura
-Sanitização de Inputs
+```
 
+### Sanitização de Inputs
+
+```javascript
 function sanitize(v) {
   if (typeof v !== 'string') return '';
   return v.trim().replace(/[<>&'"]/g, '').slice(0, 255);
 }
-Tokens de Sessão
+```
 
+### Tokens de Sessão
+
+```javascript
 const token = crypto.randomBytes(32).toString('hex');  // 64 caracteres hex
 // Armazenado em tabela separada com FK para users
 // Removido no logout
-Mecânica do Jogo
-Mapa
-O mapa é uma matriz 21×21 onde cada célula representa um tile de 20×20 pixels:
+```
 
-Valor	Tile	Descrição
-0	EMPTY	Caminho vazio
-1	WALL	Parede (intransponível)
-2	DOT	Pastilha (+10 pontos)
-3	POWER	Power pellet (+50 pontos)
-4	GHOUSE	Parede da ghost house (só fantasmas)
-5	DOOR	Porta da ghost house (só fantasmas)
-Entidades
-Pac-Man:
+---
 
-Velocidade inicial: 5.5 tiles/s (aumenta +0.2 por nível)
-Controlado por setas do teclado
-Direção é enfileirada e executada quando alinhado ao tile
-Colisão com fantasma = perde vida (a menos que esteja no modo fright)
-Fantasmas:
+## Mecânica do Jogo
 
-Velocidade inicial: 5.0 tiles/s (aumenta +0.15 por nível)
-Blinky (vermelho): persegue diretamente o tile do Pac-Man
-Pinky (rosa): persegue 2 tiles à frente do Pac-Man
-No modo fright: fogem para os cantos do mapa
-Saindo da ghost house um de cada vez (delay de 1.5s)
-Máquina de Estados
+### Mapa
 
+O mapa é uma matriz **21×21** onde cada célula representa um tile de 20×20 pixels:
+
+| Valor | Tile            | Descrição                            |
+|-------|-----------------|--------------------------------------|
+| 0     | `EMPTY`         | Caminho vazio                        |
+| 1     | `WALL`          | Parede (intransponível)              |
+| 2     | `DOT`           | Pastilha (+10 pontos)                |
+| 3     | `POWER`         | Power pellet (+50 pontos)            |
+| 4     | `GHOUSE`        | Parede da ghost house (só fantasmas) |
+| 5     | `DOOR`          | Porta da ghost house (só fantasmas)  |
+
+### Entidades
+
+**Pac-Man:**
+- Velocidade inicial: 5.5 tiles/s (aumenta +0.2 por nível)
+- Controlado por **setas do teclado**
+- Direção é enfileirada e executada quando alinhado ao tile
+- Colisão com fantasma = perde vida (a menos que esteja no modo fright)
+
+**Fantasmas:**
+- Velocidade inicial: 5.0 tiles/s (aumenta +0.15 por nível)
+- **Blinky** (vermelho): persegue diretamente o tile do Pac-Man
+- **Pinky** (rosa): persegue 2 tiles à frente do Pac-Man
+- No modo **fright**: fogem para os cantos do mapa
+- Saindo da ghost house um de cada vez (delay de 1.5s)
+
+### Máquina de Estados
+
+```
 IDLE → (ESPAÇO) → READY → (1.2s) → PLAYING → (morte) → DYING → (1.5s)
                                                               ↓
                                               lives > 0 → READY (respawn)
                                               lives = 0 → GAMEOVER → (ESPAÇO) → IDLE
                                                               
 PLAYING → (todos dots) → WIN → (2.0s) → nextLevel() → PLAYING
-Pontuação
-Ação	Pontos
-Pastilha comum	10
-Power pellet	50
-1º fantasma (fright)	200
-2º fantasma (mesmo PP)	400
-3º fantasma (mesmo PP)	800
-4º fantasma (mesmo PP)	1.600
-Sons Sintetizados
-Todos os sons são gerados em tempo real pela Web Audio API, sem arquivos externos.
+```
 
+### Pontuação
 
+| Ação                    | Pontos  |
+|-------------------------|---------|
+| Pastilha comum          | 10      |
+| Power pellet            | 50      |
+| 1º fantasma (fright)    | 200     |
+| 2º fantasma (mesmo PP)  | 400     |
+| 3º fantasma (mesmo PP)  | 800     |
+| 4º fantasma (mesmo PP)  | 1.600   |
+
+---
+
+## Sons Sintetizados
+
+Todos os sons são gerados em tempo real pela **Web Audio API**, sem arquivos externos.
+
+```javascript
 // Exemplo: som de "comer fantasma"
 eatGhost() {
   this._tone(700, 0.08, 'square', 0.10);
   setTimeout(() => this._tone(1100, 0.12, 'square', 0.10), 80);
 }
-Efeito	Oscilador	Frequência	Duração
-Chomp	Square	320 → 480 Hz	60 ms
-Power pellet	Sawtooth	180 → 680 Hz	350 ms
-Comer fantasma	Square	700 → 1100 Hz	200 ms
-Morte	Sawtooth	520 → 40 Hz	1.0 s
-Game start	Square	260, 330, 390, 520	720 ms
-Nível completo	Square	400→500→600→800→1000→1300	600 ms
-ℹ️ O AudioContext é criado na primeira interação do usuário (autoplay policy dos navegadores).
+```
 
-Dockerização
-Dockerfile
+| Efeito          | Oscilador | Frequência          | Duração |
+|-----------------|-----------|---------------------|---------|
+| Chomp           | Square    | 320 → 480 Hz        | 60 ms   |
+| Power pellet    | Sawtooth  | 180 → 680 Hz        | 350 ms  |
+| Comer fantasma  | Square    | 700 → 1100 Hz       | 200 ms  |
+| Morte           | Sawtooth  | 520 → 40 Hz         | 1.0 s   |
+| Game start      | Square    | 260, 330, 390, 520  | 720 ms  |
+| Nível completo  | Square    | 400→500→600→800→1000→1300 | 600 ms |
 
+> ℹ️ O `AudioContext` é criado na primeira interação do usuário (autoplay policy dos navegadores).
+
+---
+
+## Dockerização
+
+### Dockerfile
+
+```dockerfile
 FROM node:20-alpine
+
 WORKDIR /app
+
 COPY package*.json ./
 RUN npm install --production && npm cache clean --force
-COPY . .
-EXPOSE 3000
-CMD ["node", "server.js"]
-Base Alpine Linux (~120 MB de imagem final).
 
-Docker Compose
+COPY . .
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]
+```
+
+Base **Alpine Linux** (~120 MB de imagem final).
+
+### Docker Compose
+
+```yaml
+version: '3.8'
 
 services:
   pacman:
@@ -263,17 +364,25 @@ services:
       - DB_PATH=/opt/pacman-data/production.db
     volumes:
       - ./pacman-data:/opt/pacman-data
-Comportamento:
+```
 
-Banco SQLite em /opt/pacman-data/production.db dentro do contêiner
-Volume bind para ./pacman-data/ no host → dados persistem entre execuções
-Sem exposição de portas no docker-compose.yml (isola a aplicação)
-Variáveis de Ambiente
-Variável	Padrão	Descrição
-PORT	3000	Porta do servidor
-DB_PATH	./data/pacman.db	Caminho do arquivo SQLite
-Configuração de Ambiente
+**Comportamento:**
+- Banco SQLite em `/opt/pacman-data/production.db` dentro do contêiner
+- Volume bind para `./pacman-data/` no host → dados persistem entre execuções
+- Sem exposição de portas no `docker-compose.yml` (isola a aplicação)
 
+---
+
+## Variáveis de Ambiente
+
+| Variável    | Padrão                          | Descrição                    |
+|-------------|---------------------------------|------------------------------|
+| `PORT`      | `3000`                          | Porta do servidor            |
+| `DB_PATH`   | `./data/pacman.db`              | Caminho do arquivo SQLite    |
+
+### Configuração
+
+```bash
 # Linux / macOS
 export PORT=3000
 export DB_PATH=/caminho/personalizado/pacman.db
@@ -288,19 +397,25 @@ npm start
 $env:PORT=3000
 $env:DB_PATH="C:\dados\pacman.db"
 npm start
-Possíveis Melhorias
- Mais fantasmas — adicionar Inky (ciano) e Clyde (laranja) com IAs distintas
- Modo scatter — cada fantasma tem um canto para o qual se dirige periodicamente
- Efeitos visuais — animação de frutas bônus, partículas ao comer fantasma
- Som de fundo — loop de sirene quando em modo fright
- Leaderboard global — página separada com histórico completo
- Mobile — controles touch na tela
- WebSockets — multiplayer ou espectador ao vivo
- Temas de mapa — mapas alternativos selecionáveis
-Licença
+```
+
+---
+
+## Possíveis Melhorias
+
+- [ ] **Mais fantasmas** — adicionar Inky (ciano) e Clyde (laranja) com IAs distintas
+- [ ] **Modo scatter** — cada fantasma tem um canto para o qual se dirige periodicamente
+- [ ] **Efeitos visuais** — animação de frutas bônus, partículas ao comer fantasma
+- [ ] **Som de fundo** — loop de sirene quando em modo fright
+- [ ] **Leaderboard global** — página separada com histórico completo
+- [ ] **Mobile** — controles touch na tela
+- [ ] **WebSockets** — multiplayer ou espectador ao vivo
+- [ ] **Temas de mapa** — mapas alternativos selecionáveis
+
+---
+
+## Licença
+
 MIT © 2025 — Projeto educacional e de demonstração.
 
-Créditos
-Pac-Man é propriedade da Bandai Namco Entertainment
-Este é um projeto educacional/fan-made sem fins comerciais
-Inspirado no clássico original de 1980 por Tōru Iwatani
+**Pac-Man** é propriedade da Bandai Namco Entertainment. Este é um projeto **educacional/fan-made** sem fins comerciais. Inspirado no clássico original de 1980 por Tōru Iwatani.

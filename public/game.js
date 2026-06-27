@@ -321,6 +321,7 @@ class Game {
   showOverlay(text, hint = '') {
     this.overlayText.textContent = text;
     this.overlayHint.textContent = hint;
+    if (this.overlayEl) this.overlayEl.classList.add('show');
   }
 
   hideOverlay(immediate) {

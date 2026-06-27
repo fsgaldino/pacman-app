@@ -55,7 +55,10 @@ const Audio = {
 
   init() {
     try {
-      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      // Só cria o contexto se ele ainda não existir
+      if (!this.ctx) {
+        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      }
     } catch (_) { /* fallback silencioso */ }
   },
 
@@ -169,7 +172,8 @@ class Entity {
       this.moving = false;
       // Apenas alinha ao centro
       const c = this.center();
-      this.px = c.x; this.py = c.y;
+      this.px = c.x; 
+      this.py = c.y;
       return false;
     }
 
@@ -187,9 +191,9 @@ class Entity {
     if (this.px > W + TS/2) this.px = -TS/2;
 
     // Atualiza tile quando cruza o centro
-    const c = this.center();
-    if (Math.abs(this.px - c.x) < 1) this.px = c.x;
-    if (Math.abs(this.py - c.y) < 1) this.py = c.y;
+    //const c = this.center();
+    //if (Math.abs(this.px - c.x) < 1) this.px = c.x;
+    //if (Math.abs(this.py - c.y) < 1) this.py = c.y;
 
     // Se cruzou o centro, atualiza col/row
     const cx = this.col * TS + TS/2;

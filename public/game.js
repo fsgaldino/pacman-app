@@ -283,15 +283,15 @@ class Game {
     this.state = 'IDLE';
     this.showOverlay('PRESSIONE ESPAÇO', 'para começar');
     this.hideOverlay(false);
-    document.addEventListener('keydown', this._startBinder = (e) => {
-      if (e.code === 'Space' && this.state === 'IDLE') {
-        this.state = 'READY';
-        this.readyTimer = 1.2;
-        this.hideOverlay(true);
-        Audio.gameStart();
-        document.removeEventListener('keydown', this._startBinder);
-      }
-    });
+    //document.addEventListener('keydown', this._startBinder = (e) => {
+    //  if (e.code === 'Space' && this.state === 'IDLE') {
+    //    this.state = 'READY';
+    //    this.readyTimer = 1.2;
+    //    this.hideOverlay(true);
+    //    Audio.gameStart();
+    //    document.removeEventListener('keydown', this._startBinder);
+    //  }
+    //});
 
     this.lastTime = 0;
     if (this.animFrame) cancelAnimationFrame(this.animFrame);
@@ -722,13 +722,26 @@ class Game {
 const canvas = document.getElementById('game-canvas');
 const game = new Game(canvas);
 
-// Controles
+// Controles Globais Unificados (Teclado e Foco)
 document.addEventListener('keydown', e => {
+  // 1. Se o jogo estiver parado em IDLE, a barra de espaço inicia o motor
+  if (e.code === 'Space' && game.state === 'IDLE') {
+    e.preventDefault();
+    Audio.init(); // Ativa o contexto de áudio do navegador no clique do usuário
+    game.state = 'READY';
+    game.readyTimer = 1.2;
+    game.hideOverlay(true);
+    Audio.gameStart();
+    return;
+  }
+
+  // 2. Captura as setas de movimentação e impede o scroll da página
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
     e.preventDefault();
     game.keys[e.code] = true;
   }
 });
+
 document.addEventListener('keyup', e => {
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
     game.keys[e.code] = false;

@@ -196,6 +196,21 @@
     }
     #settings-btn:hover { background: #ffcc00; color: #111; }
 
+    #mute-btn {
+      padding: 6px 10px;
+      background: #333;
+      color: #ffcc00;
+      border: 1px solid #ffcc00;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 16px;
+      cursor: pointer;
+      transition: .2s;
+      line-height: 1;
+    }
+    #mute-btn:hover { background: #ffcc00; color: #111; }
+    #mute-btn.muted { opacity: 0.5; border-color: #666; color: #888; }
+
     /* ── Modal de configurações ── */
     #settings-modal {
       display: none;
@@ -389,6 +404,35 @@
       border-color: #ffcc00;
     }
 
+    /* ── Keyboard Hints ── */
+    #keyboard-hints {
+      width: 420px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 16px;
+      padding: 10px 16px;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 6px;
+    }
+    .hints-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #888;
+    }
+    .hint-key {
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 3px;
+      padding: 2px 6px;
+      color: #ffcc00;
+      font-size: 10px;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
     @media (pointer: coarse), (max-width: 500px) {
       #mobile-controls { display: flex; }
       #game-screen { padding: 8px; gap: 6px; }
@@ -396,6 +440,7 @@
       #game-header span { min-width: 80px; }
       #game-canvas { max-width: 100%; height: auto; }
       #high-scores { max-width: 100%; width: 100%; }
+      #keyboard-hints { display: none; }
     }
   </style>
 </head>
@@ -432,6 +477,7 @@
       <span>🏆 <span id="score-display">0</span></span>
       <span>❤️ <span id="lives-display">3</span></span>
       <span>🎯 <span id="level-display">1</span></span>
+      <button id="mute-btn" title="Alternar som">🔊</button>
       <button id="logout-btn">Sair</button>
       <button id="settings-btn">⚙️</button>
     </div>
@@ -454,6 +500,13 @@
         <button class="action-btn" id="mobile-start">START</button>
         <button class="action-btn" id="mobile-pause">❚❚</button>
       </div>
+    </div>
+    <div id="keyboard-hints">
+      <div class="hints-row"><span class="hint-key">↑↓←→</span> Mover</div>
+      <div class="hints-row"><span class="hint-key">Espaço</span> Iniciar / Pular intro</div>
+      <div class="hints-row"><span class="hint-key">P</span> Pausar</div>
+      <div class="hints-row"><span class="hint-key">M</span> Alternar som</div>
+      <div class="hints-row"><span class="hint-key">N</span> Novo jogo</div>
     </div>
     <div id="high-scores">
       <h3>🏅 HIGH SCORES</h3>
@@ -497,7 +550,6 @@
           <button class="diff-btn" data-diff="easy">Fácil</button>
           <button class="diff-btn active" data-diff="normal">Normal</button>
           <button class="diff-btn" data-diff="hard">Difícil</button>
-          <button class="diff-btn" data-diff="extreme">Extremo</button>
         </div>
       </div>
 

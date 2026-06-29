@@ -7,6 +7,43 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [2.1.0] - 2025-06-29
+
+### Added
+
+#### 🔇 Botão de Mute Rápido
+- Botão 🔊/🔇 no header do jogo para alternar som sem abrir configurações
+- Atalho de teclado **M** para toggle de mute durante o jogo
+- Método `_toggleSound()` compartilhado entre botão, tecla M e modal de settings
+- Sincronização bidirecional com o toggle de som no modal de configurações
+
+#### ⌨️ Seção de Dicas de Teclado
+- Adicionada seção `#keyboard-hints` com todos os atalhos: ↑↓←→, Espaço, P, M, N
+- Estilo consistente com o visual dark do jogo
+- Oculta automaticamente no mobile (via `@media (pointer: coarse)`)
+
+### Fixed
+
+#### 🐛 Teclas vazando na tela de Auth
+- **Problema:** Teclas do jogo (N, Space, P, setas) eram processadas quando a tela de login/registo estava visível
+- **Solução:** Guarda `if (gameScreen.style.display === 'none') return;` no handler global de keydown
+
+#### 🐛 Nível "Extremo" fora da tela
+- **Problema:** Botão "Extremo" no modal de configurações overflowava para fora da caixa
+- **Solução:** Nível "Extremo" removido completamente (HTML + JS). Dificuldade agora tem 3 opções: Fácil, Normal, Difícil
+
+#### 🐛 Sons ignorando mute
+- **Problema:** `powerPellet()` e `death()` criavam osciladores diretamente sem checar `Audio._muted`
+- **Solução:** Adicionada verificação `this._muted` em ambos os métodos
+- **Problema:** `Audio.intro()` era chamado antes de `_muted` ser sincronizado com settings
+- **Solução:** `Audio._muted = !this.settings.soundEnabled` sincronizado antes de `Audio.intro()` em `init()` e `startLevel()`
+
+### Changed
+- `_loadSettings()` agora valida a dificuldade: valores inválidos no localStorage (ex: 'extreme') são resetados para 'normal'
+- README.md e CHANGELOG.md atualizados com as alterações desta versão
+
+---
+
 ## [2.0.0] - 2025-06-28
 
 ### Added

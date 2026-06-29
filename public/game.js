@@ -148,7 +148,7 @@ const Audio = {
   },
 
   powerPellet() {
-    if (!this.ctx) return;
+    if (!this.ctx || this._muted) return;
     const t = this.ctx.currentTime;
     const o = this.ctx.createOscillator();
     const g = this.ctx.createGain();
@@ -167,7 +167,7 @@ const Audio = {
   },
 
   death() {
-    if (!this.ctx) return;
+    if (!this.ctx || this._muted) return;
     const t = this.ctx.currentTime;
     const o = this.ctx.createOscillator();
     const g = this.ctx.createGain();
@@ -572,6 +572,7 @@ class Game {
     this.introPhase = 0;
     this.introParticles = [];
     this.hideOverlay(false);
+    Audio._muted = !this.settings.soundEnabled;
     if (this.settings.introEnabled) Audio.intro();
 
     this.lastTime = 0;
@@ -630,6 +631,7 @@ class Game {
       this.introPhase = 0;
       this.introParticles = [];
       this.hideOverlay(false);
+      Audio._muted = !this.settings.soundEnabled;
       Audio.intro();
     } else {
       this.state = 'READY';
@@ -1792,9 +1794,14 @@ class Game {
 
   _loadSettings() {
     const defaults = { introEnabled: true, soundEnabled: true, difficulty: 'normal' };
+    const validDifficulties = ['easy', 'normal', 'hard'];
     try {
       const raw = localStorage.getItem(this._settingsKey());
-      if (raw) return { ...defaults, ...JSON.parse(raw) };
+      if (raw) {
+        const loaded = { ...defaults, ...JSON.parse(raw) };
+        if (!validDifficulties.includes(loaded.difficulty)) loaded.difficulty = 'normal';
+        return loaded;
+      }
     } catch (_) {}
     return defaults;
   }
@@ -1810,8 +1817,32 @@ class Game {
     switch (this.settings.difficulty) {
       case 'easy':    return 0.7;
       case 'hard':    return 1.3;
-      case 'extreme': return 1.6;
       default:        return 1.0;
+    }
+  }
+
+  /** Alterna som e sincroniza todos os controles UI */
+  _toggleSound() {
+    this.settings.soundEnabled = !this.settings.soundEnabled;
+    Audio._muted = !this.settings.soundEnabled;
+    this._saveSettings();
+    this._updateMuteBtn();
+    const soundToggle = document.getElementById('set-sound');
+    if (soundToggle) soundToggle.checked = this.settings.soundEnabled;
+  }
+
+  /** Atualiza ícone do botão de mute no header */
+  _updateMuteBtn() {
+    const muteBtn = document.getElementById('mute-btn');
+    if (!muteBtn) return;
+    if (this.settings.soundEnabled) {
+      muteBtn.textContent = '🔊';
+      muteBtn.classList.remove('muted');
+      muteBtn.title = 'Silenciar som';
+    } else {
+      muteBtn.textContent = '🔇';
+      muteBtn.classList.add('muted');
+      muteBtn.title = 'Ativar som';
     }
   }
 
@@ -1822,9 +1853,16 @@ class Game {
     const closeBtn = document.getElementById('settings-close');
     const introToggle = document.getElementById('set-intro');
     const soundToggle = document.getElementById('set-sound');
+    const muteBtn = document.getElementById('mute-btn');
     const diffBtns = document.querySelectorAll('.diff-btn');
 
     if (!modal || !btn) return;
+
+    // Botão de mute rápido no header
+    if (muteBtn) {
+      this._updateMuteBtn();
+      muteBtn.onclick = () => this._toggleSound();
+    }
 
     // Aplica settings salvas aos controles
     introToggle.checked = this.settings.introEnabled;
@@ -2479,6 +2517,16 @@ const game = new Game(canvas);
 
 // ── FIX 2 — Input via keydown events (enfileira uma direção por press) ──
 document.addEventListener('keydown', e => {
+  // Ignora teclas do jogo quando a tela de auth está visível
+  if (gameScreen.style.display === 'none') return;
+
+  // M — Alternar mute rápido
+  if (e.code === 'KeyM') {
+    e.preventDefault();
+    game._toggleSound();
+    return;
+  }
+
   // P — Pausar / Retomar
   if (e.code === 'KeyP' && (game.state === 'PLAYING' || game.state === 'PAUSED')) {
     e.preventDefault();

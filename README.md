@@ -128,7 +128,8 @@ v0.9 (Beta)          v1.0 (Funcional)             v2.0 (Final)
 
 - **Toggle de Intro** — habilita/desabilita animação de abertura
 - **Toggle de Som** — mute/unmute de todos os efeitos sonoros
-- **4 níveis de dificuldade**: Fácil (0.7×), Normal (1.0×), Difícil (1.3×), Extremo (1.6×)
+- **Botão de mute rápido** 🔊/🔇 no header do jogo
+- **3 níveis de dificuldade**: Fácil (0.7×), Normal (1.0×), Difícil (1.3×)
 - Configurações persistem em localStorage entre sessões
 - Pausa automática ao abrir, resume ao fechar
 
@@ -211,7 +212,7 @@ Capturas de tela do jogo em diferentes estados. Para gerar as screenshots, execu
 
 <img src="screenshots/04-settings.png" alt="Modal de configurações com toggles e dificuldade" width="420">
 
-> Menu de configurações: toggles de Intro e Som, seletor de dificuldade (Fácil/Normal/Difícil/Extremo), close button.
+> Menu de configurações: toggles de Intro e Som, seletor de dificuldade (Fácil/Normal/Difícil), close button.
 
 ### 📱 Mobile D-Pad
 
@@ -318,7 +319,9 @@ O projeto iniciou como um protótipo básico com as seguintes limitações:
 
 **Menu de Configurações:**
 - Modal overlay com toggles de intro/sound e seletor de dificuldade
-- 4 presets: Fácil (0.7×), Normal (1.0×), Difícil (1.3×), Extremo (1.6×)
+- 3 presets: Fácil (0.7×), Normal (1.0×), Difícil (1.3×)
+- Botão de mute rápido 🔊/🔇 no header + atalho tecla M
+- Validação de settings: dificuldade inválida no localStorage reseta para 'normal'
 - Persistência em localStorage, reload automático
 - Pausa/resume ao abrir/fechar
 
@@ -676,7 +679,8 @@ Configurações são persistidas em `localStorage` com a chave `pacman_settings`
 | 🟢 Fácil     | 0.7×          | Fantasmas 30% mais lentos |
 | 🟡 Normal    | 1.0×          | Velocidade padrão |
 | 🟠 Difícil   | 1.3×          | Fantasmas 30% mais rápidos |
-| 🔴 Extremo   | 1.6×          | Fantasmas 60% mais rápidos |
+
+> ℹ️ Validação: se uma dificuldade inválida estiver salva no localStorage (ex: 'extreme' de versão anterior), é automaticamente resetada para 'normal'.
 
 ### Integração com o Jogo
 
@@ -799,7 +803,9 @@ npm start
 | Espaço        | Iniciar jogo / Pular intro / Continuar  |
 | P             | Pausar / Retomar                        |
 | N             | Novo jogo (ignora save)                 |
+| M             | Alternar som (mute/desmute)             |
 | ⚙️ (botão)     | Abrir configurações                     |
+| 🔊/🔇 (botão) | Alternar som rápido no header           |
 
 ---
 

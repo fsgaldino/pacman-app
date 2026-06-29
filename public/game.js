@@ -8,6 +8,7 @@
 const COLS = 21;
 const ROWS = 21;
 const TS   = 20; // tile size (px)
+const TURN_TOLERANCE = 5; // margem de pixels para snap-to-tile em cruzamentos
 const W    = COLS * TS; // 420
 const H    = ROWS * TS; // 420
 
@@ -280,6 +281,41 @@ class Entity {
            Math.abs(this.py - this.targetY) < 1.5;
   }
 
+  /** Próximo ao centro do tile (tolerância variável para curvas) */
+  _nearCenter(tolerance) {
+    return Math.abs(this.px - this.targetX) < tolerance &&
+           Math.abs(this.py - this.targetY) < tolerance;
+  }
+
+  /**
+   * FIX — Reversão instantânea de 180 graus:
+   * Inverte a direção imediatamente, recalcula col/row e target
+   * para o tile que o Pac-Man acabou de deixar para trás.
+   */
+  _instantReverse() {
+    const d = DIR[this.dir];
+    const destCol = this.col + d.dx;
+    const destRow = this.row + d.dy;
+    // Inverte direção
+    this.dir = DIR_REV[this.dir];
+    // Valida se o tile de destino é válido (evita col=-1 nas bordas do mapa)
+    if (destCol >= 0 && destCol < COLS && destRow >= 0 && destRow < ROWS) {
+      const oldCol = this.col;
+      const oldRow = this.row;
+      this.col = destCol;
+      this.row = destRow;
+      // Alvo: centro do tile que acabamos de deixar
+      this.targetX = oldCol * TS + TS / 2;
+      this.targetY = oldRow * TS + TS / 2;
+    } else {
+      // Na borda do mapa — apenas inverte direção, mantém posição
+      const c = this.center();
+      this.targetX = c.x;
+      this.targetY = c.y;
+    }
+    this.moving = true;
+  }
+
   /** Verifica se um tile é transitável */
   canMoveTo(col, row, map, isGhost) {
     if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return false;
@@ -360,6 +396,9 @@ class Entity {
       this.py = this.targetY;
       this.col = nc;
       this.row = nr;
+      // FIX — Aplica buffer ao atingir centro do tile durante movimento
+      // (permite curvas fluidas sem precisar colidir com parede)
+      this._applyBuffer(map, isGhost);
     } else {
       this.px += (diffX / dist) * stepPx;
       this.py += (diffY / dist) * stepPx;
@@ -394,11 +433,35 @@ class Entity {
     }
   }
 
-  /** FIX 2 — Enfileira direção para aplicação futura */
+  /** FIX — Enfileira direção com suporte a reversão instantânea e snap-to-tile */
   setBufferedDir(newDir, map, isGhost) {
+    // FIX — Reversão de 180°: aplica imediatamente sem esperar colisão
+    if (newDir === DIR_REV[this.dir]) {
+      this._instantReverse();
+      this.bufferedDir = null;
+      return;
+    }
+
     this.bufferedDir = newDir;
-    // Se já parado no centro, aplica imediatamente
-    if (this.atCenter()) {
+
+    // FIX — Snap-to-tile: se está em movimento e perto do centro do cruzamento,
+    // alinha automaticamente e executa a curva (só quando movendo, não quando parado)
+    if (this.moving && this._nearCenter(TURN_TOLERANCE)) {
+      // Calcula tile alvo atual (onde estávamos indo)
+      const d = DIR[this.dir];
+      const nc = this.col + d.dx;
+      const nr = this.row + d.dy;
+      // Só aplica snap se o tile alvo é transitável
+      if (this.canMoveTo(nc, nr, map, isGhost)) {
+        // Snap ao centro do tile alvo
+        this.px = nc * TS + TS / 2;
+        this.py = nr * TS + TS / 2;
+        this.col = nc;
+        this.row = nr;
+        this.targetX = this.px;
+        this.targetY = this.py;
+      }
+      // Aplica a direção enfileirada
       this._applyBuffer(map, isGhost);
     }
   }

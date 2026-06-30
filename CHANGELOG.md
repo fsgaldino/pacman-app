@@ -7,6 +7,61 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [2.2.0] - 2025-06-30
+
+### Added
+
+#### 🍒 Efeito Visual de Aparição de Fruta
+- Animação de brilho/pulso com anel expansivo e partículas cintilantes quando uma fruta aparece
+- Escalamento progressivo (0→1×) durante os primeiros 2 segundos
+- Som de power-up ao aparecer
+- Pulso suave contínuo durante toda a vida da fruta
+
+#### 🍒 Animação de Comer Fruta
+- Explosão radial de 12 partículas coloridas ao comer uma fruta
+- Anel expansivo na cor da fruta (verde para Speed, azul para Shield, dourado para normal)
+- Partículas com gravidade e fade-out suave
+- Duração: 0.5 segundos
+
+#### 📱 Botão Continue no Mobile
+- Botão verde "▶ CONT" no mobile quando GAMEOVER com save disponível
+- Visibilidade sincronizada com estados do jogo (init, startLevel, resumeGame)
+- Touch e mouse handlers com debounce
+
+#### 🏢 Tela de Créditos
+- "© ProntaCorp S.A." renderizada no canvas durante o estado IDLE
+
+### Fixed
+
+#### 🐛 Fluidez de Movimento 90°
+- **Problema:** Mudança de direção horizontal↔vertical não era suave, exigindo antecipação excessiva
+- **Solução:** `TURN_TOLERANCE` aumentado de 5px para 10px; `setBufferedDir` reescrito com detecção antecipada de cruzamento (verifica tile atual E próximo tile)
+- **Impacto:** Controles muito mais responsivos ao virar 90° em meio ao movimento
+
+#### 🐛 Fantasmas 3 e 4 Presos na Casa
+- **Problema:** Inky (col 11) e Clyde (col 9) não saíam da ghost house em nenhum nível
+- **Solução:** Lógica de `leaving` corrigida — agora navega horizontalmente até a coluna 10 (corredor de saída) antes de subir
+- **Impacto:** Todos os 4 fantasmas saem da casa corretamente
+
+#### 🐛 Sistema de Frutas
+- **Problema:** Frutas não apareciam aleatoriamente; sistema baseado em contagem de dots era imprevisível
+- **Solução:** Timer de 2 minutos (`FRUIT_SPAWN_INTERVAL`); frutas spawnam em posições aleatórias sobre pastilhas; ordem progressiva: 🍒→🍓→🍎→🍉→🍈→🚀
+- **Impacto:** Frutas aparecem previsivelmente a cada 2 minutos em posições variadas
+
+#### 🐛 Salvamento Automático
+- **Problema:** Save não funcionava corretamente; tecla N só funcionava em pausa
+- **Solução:** Auto-save ao morrer (antes de decrementar vidas); GAMEOVER mostra "C continuar • R reiniciar"; N funciona em IDLE e GAMEOVER; login detecta save existente
+- **Impacto:** Progresso é preservado; jogador pode continuar do último nível salvo
+
+### Changed
+- FRUITS reordenado: 🍒→🍓→🍎→🍉→🍈→🚀 (cereja, morango, maçã, melancia, melão, foguete)
+- Frutas removidas do sistema baseado em dots para sistema baseado em tempo
+- `fruitSpawnAnim` e `fruitParticles` adicionados para efeitos visuais de spawn
+- `fruitEatEffects` adicionado para efeitos de comer fruta
+- `_updateMobileContinueBtn()` sincroniza visibilidade do botão em todas as transições de estado
+
+---
+
 ## [2.1.0] - 2025-06-29
 
 ### Added

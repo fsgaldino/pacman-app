@@ -35,16 +35,16 @@
 ## Roadmap de Versões
 
 ```
-v0.9 (Beta)          v1.0 (Funcional)             v2.0 (Final)
-  │                      │                            │
-  ├─ 2 fantasmas         ├─ 4 fantasmas + IA          ├─ Sistema de combo
-  ├─ Movimento básico    ├─ FIX 1: Target-based       ├─ Menu de configurações
-  ├─ 100 linhas IA       ├─ FIX 2: Buffer de input    ├─ Controles mobile (D-pad)
-  ├─ Sem save            ├─ FIX 3: Ghost house        ├─ Efeitos visuais por tier
-  ├─ Sem frutas          ├─ Scatter/Chase cycle       ├─ Tela de pausa aprimorada
-  └─ 2 sons              ├─ 4 fantasmas completos     ├─ Combo de score (ghost+fruit)
-                         ├─ Sistema de frutas         ├─ Dificuldade ajustável
-                         ├─ Save/resume (localStorage)├─ Intro tier-based
+v0.9 (Beta)          v1.0 (Funcional)             v2.0 (Final)                v2.2 (Polish)
+  │                      │                            │                           │
+  ├─ 2 fantasmas         ├─ 4 fantasmas + IA          ├─ Sistema de combo         ├─ Fluidez de movimento 90°
+  ├─ Movimento básico    ├─ FIX 1: Target-based       ├─ Menu de configurações    ├─ Fantasmas 3/4 saem da casa
+  ├─ 100 linhas IA       ├─ FIX 2: Buffer de input    ├─ Controles mobile (D-pad) ├─ Frutas por tempo (2min)
+  ├─ Sem save            ├─ FIX 3: Ghost house        ├─ Efeitos visuais por tier ├─ Salvamento automático
+  ├─ Sem frutas          ├─ Scatter/Chase cycle       ├─ Tela de pausa aprimorada ├─ Botão Continue mobile
+  └─ 2 sons              ├─ 4 fantasmas completos     ├─ Combo de score           ├─ Efeitos de fruta (spawn+eat)
+                         ├─ Sistema de frutas         ├─ Dificuldade ajustável    ├─ Tela de créditos
+                         ├─ Save/resume (localStorage)├─ Intro tier-based         └─ v2.1: Mute + keyboard hints
                          ├─ Progressão de nível       ├─ 14+ sons sintetizados
                          ├─ High score + celebração   └─ Leaderboard na pausa
                          └─ 10+ sons sintetizados
@@ -100,21 +100,23 @@ v0.9 (Beta)          v1.0 (Funcional)             v2.0 (Final)
 
 ---
 
-## Funcionalidades (v2.0 Final)
+## Funcionalidades (v2.2)
 
 ### 🎮 Jogo
 
-- **Pac-Man clássico** controlado pelas setas do teclado (com buffer de direção)
-- **4 fantasmas** com IA clássica por tiers: Blinky, Pinky, Inky, Clyde
+- **Pac-Man clássico** controlado pelas setas do teclado (com buffer de direção e tolerância 10px para viradas 90°)
+- **4 fantasmas** com IA clássica por tiers: Blinky, Pinky, Inky, Clyde — todos saem da casa corretamente
 - **Ciclo Scatter/Chase** com timings progressivos por nível
-- **Sistema de frutas** — 6 frutas (🍒🍓🍊🍎🍈🚀) com power-ups (Speed, Shield)
+- **Sistema de frutas** — 6 frutas (🍒🍓🍎🍉🍈🚀) com spawn progressivo a cada 2 minutos em posições aleatórias sobre pastilhas, power-ups (Speed, Shield)
+- **Efeitos visuais de fruta** — brilho/pulso com partículas ao aparecer; explosão radial ao ser comida
 - **Power pellets** — ativam modo fright (fantasmas azuis e vulneráveis)
 - **Túneis** — wrap-around horizontal nas bordas do mapa
 - **Mapa 21×21** com ghost house, portas e corredores de saída
 - **Sistema de combos** — multiplicador de score por ações em sequência (ghosts + frutas)
 - **Progressão de nível** — velocidade, IA e visual aumentam a cada fase
-- **Save/Resume** — auto-save no pause, nível completo e game over (localStorage)
+- **Save/Resume** — auto-save ao morrer, Continue/Restart no GAMEOVER, detecção no login (localStorage)
 - **High Score** — submissão autenticada, tela de celebração com confete
+- **Créditos** — "© ProntaCorp S.A." no estado IDLE
 
 ### 🏆 Sistema de Combo
 
@@ -353,6 +355,33 @@ O projeto iniciou como um protótipo básico com as seguintes limitações:
 - Ready (jingle entre níveis)
 - Mode switch (tom sutil)
 
+### 🏷️ v2.1 — Bug Fixes, Mute Button, Keyboard Hints
+
+**Correções e melhorias:**
+
+- Botão 🔊/🔇 de mute rápido no header + atalho M
+- Seção de dicas de teclado no HTML
+- Teclas não vazam na tela de Auth
+- Nível "Extremo" removido (3 dificuldades: Fácil, Normal, Difícil)
+- Sons `powerPellet()` e `death()` agora respeitam mute
+- `_loadSettings()` valida dificuldade no localStorage
+
+### 🏷️ v2.2 — Polimento e Correções Críticas
+
+**Correções de bugs:**
+
+- **Fluidez de movimento 90°** — `TURN_TOLERANCE` aumentado para 10px; detecção antecipada de cruzamento
+- **Fantasmas 3 e 4 saindo da casa** — navega horizontalmente até coluna 10 antes de subir
+- **Sistema de frutas** — timer de 2 minutos, spawn aleatório sobre pastilhas, ordem progressiva
+- **Salvamento automático** — auto-save ao morrer, Continue/Restart no GAMEOVER, detecção no login
+
+**Novas funcionalidades:**
+
+- **Efeitos visuais de fruta** — brilho/pulso com partículas ao aparecer; explosão radial ao comer
+- **Botão Continue mobile** — botão verde "▶ CONT" no GAMEOVER com save
+- **Tela de créditos** — "© ProntaCorp S.A." no estado IDLE
+- **Frutas reordenadas** — 🍒→🍓→🍎→🍉→🍈→🚀 (cereja, morango, maçã, melancia, melão, foguete)
+
 ---
 
 ## Pré-requisitos
@@ -566,8 +595,8 @@ PLAYING ──(P)──► PAUSED ──(P)──► PLAYING
 | 4º fantasma (mesmo PP)        | 1.600                |
 | 🍒 Cherry                     | 100                  |
 | 🍓 Morango                    | 300                  |
-| 🍊 Laranja                    | 500                  |
-| 🍎 Maçã                       | 700                  |
+| 🍎 Maçã                       | 500                  |
+| 🍉 Melancia                   | 700                  |
 | 🍈 Melão (Speed Up)           | 1.000                |
 | 🚀 Foguete (Shield)           | 2.000                |
 
@@ -717,6 +746,7 @@ Configurações são persistidas em `localStorage` com a chave `pacman_settings`
 - **Cleanup**: interval é limpo em touchend, touchcancel, mouseup e mouseleave
 - **START**: trata IDLE (novo jogo/continuar), GAMEOVER (init), INTRO (pular)
 - **Pause**: alterna entre PLAYING ↔ PAUSED
+- **Continue**: botão verde "▶ CONT" aparece no GAMEOVER quando há save disponível
 
 ### Detecção Automática
 
@@ -799,13 +829,15 @@ npm start
 
 | Tecla         | Ação                                    |
 |---------------|-----------------------------------------|
-| ← → ↑ ↓      | Mover Pac-Man (buffer de direção)       |
-| Espaço        | Iniciar jogo / Pular intro / Continuar  |
-| P             | Pausar / Retomar                        |
-| N             | Novo jogo (ignora save)                 |
-| M             | Alternar som (mute/desmute)             |
-| ⚙️ (botão)     | Abrir configurações                     |
-| 🔊/🔇 (botão) | Alternar som rápido no header           |
+| ← → ↑ ↓      | Mover Pac-Man (buffer de direção com tolerância 10px)  |
+| Espaço        | Iniciar jogo / Pular intro / Continuar                  |
+| P             | Pausar / Retomar                                        |
+| N             | Novo jogo (ignora save) — funciona em IDLE e GAMEOVER  |
+| C             | Continuar jogo salvo (GAMEOVER com save)                |
+| R             | Reiniciar do nível 1 (GAMEOVER com save)                |
+| M             | Alternar som (mute/desmute)                             |
+| ⚙️ (botão)     | Abrir configurações                                     |
+| 🔊/🔇 (botão) | Alternar som rápido no header                           |
 
 ---
 

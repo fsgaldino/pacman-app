@@ -466,9 +466,8 @@ class Game {
         ctx.textAlign = 'right'; ctx.fillText(s.player_email || '', W - 50, sy); sy += 18;
       });
     }
-    this._renderCreditsCopyright(ctx, H - 12);
     ctx.fillStyle = '#666'; ctx.font = '11px monospace'; ctx.textAlign = 'center';
-    ctx.fillText('P para continuar  •  ⚙️ Configurações', cx, H - 28);
+    ctx.fillText('P para continuar  •  ⚙️ Configurações', cx, H - 12);
   }
 
   update(dt) {
@@ -616,6 +615,11 @@ class Game {
             this.fruitEatEffects.push({ x: fx, y: fy, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, life: 1.0, color: i % 2 === 0 ? eatColor : '#fff', size: 2 + Math.random() * 2 });
           }
           this.fruitEatEffects.push({ x: fx, y: fy, vx: 0, vy: 0, life: 1.0, color: eatColor, size: 0, ring: true });
+          // Restaura pastilha original sob a fruta
+          if (this._fruitOriginalTile != null) {
+            this.map[this.fruitRow][this.fruitCol] = this._fruitOriginalTile;
+            this._fruitOriginalTile = null;
+          }
           this.updateUI(); this.fruit = null; this.fruitTimer = 0; this.fruitSpawnTimer = 0; this.fruitParticles = [];
         }
       }
@@ -977,10 +981,8 @@ class Game {
     }
 
     if (this.state === 'PAUSED') this._renderPause(ctx);
-    if (this.state === 'GAMEOVER') this._renderCreditsCopyright(ctx, H - 16);
 
-    if (this.state === 'IDLE') this._renderCreditsFooter(ctx);
-    if (this.state === 'PLAYING') this._renderCreditsFooter(ctx, true);
+    // Copyright moved to HTML above game-header
   }
 
   drawPacman(ctx) {
@@ -1153,32 +1155,6 @@ class Game {
     else this.showOverlay('PRESSIONE ESPAÇO', 'para começar');
   }
 
-  // ── Créditos ──
-  _renderCreditsFooter(ctx, atTop = false) {
-    const cx = W / 2;
-    if (atTop) {
-      ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0, 0, W, 40);
-      ctx.fillStyle = '#666'; ctx.font = '8px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('PAC-MAN RETRÔ', cx, 12);
-      ctx.fillStyle = '#ffcc00'; ctx.font = 'bold 9px monospace';
-      ctx.fillText('ProntaCorp S.A.', cx, 24);
-      ctx.fillStyle = '#888'; ctx.font = '8px monospace';
-      ctx.fillText('tecnologia com propósito humano', cx, 34);
-    } else {
-      ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0, H - 40, W, 40);
-      ctx.fillStyle = '#666'; ctx.font = '8px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('PAC-MAN RETRÔ', cx, H - 28);
-      ctx.fillStyle = '#ffcc00'; ctx.font = 'bold 9px monospace';
-      ctx.fillText('ProntaCorp S.A.', cx, H - 16);
-      ctx.fillStyle = '#888'; ctx.font = '8px monospace';
-      ctx.fillText('tecnologia com propósito humano', cx, H - 6);
-    }
-  }
-  _renderCreditsCopyright(ctx, y) {
-    const cx = W / 2;
-    ctx.fillStyle = '#555'; ctx.font = '8px monospace'; ctx.textAlign = 'center';
-    ctx.fillText('© ProntaCorp S.A.', cx, y);
-  }
   _showRanking() {
     const modal = document.getElementById('ranking-modal');
     if (!modal) return;
@@ -1231,7 +1207,6 @@ class Game {
     for (let i = 0; i < this.lives; i++) { const lx = cx - ((this.lives - 1) * 12) + i * 24; ctx.fillStyle = '#ffcc00'; ctx.beginPath(); ctx.arc(lx, y + 12, 6, 0.25 * Math.PI, 1.75 * Math.PI); ctx.lineTo(lx, y + 12); ctx.closePath(); ctx.fill(); }
     y += 38; const gc = ['#ff0000', '#ffb8ff', '#00ffff', '#ffb851']; const gn = ['BLINKY', 'PINKY', 'INKY', 'CLYDE']; ctx.font = '8px monospace';
     gc.forEach((color, i) => { const gx = cx - 45 + i * 30; ctx.fillStyle = color; ctx.beginPath(); ctx.arc(gx, y, 5, Math.PI, 0); ctx.lineTo(gx + 5, y + 6); ctx.lineTo(gx - 5, y + 6); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#888'; ctx.fillText(gn[i], gx, y + 14); });
-    this._renderCreditsCopyright(ctx, H - 16);
     ctx.globalAlpha = 1;
   }
 

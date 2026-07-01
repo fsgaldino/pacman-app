@@ -100,6 +100,29 @@
       padding: 20px;
     }
 
+    #copyright-bar {
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      padding: 4px 0 2px;
+    }
+    #copyright-bar .cp-title {
+      color: #666;
+      font-size: 8px;
+      letter-spacing: 1px;
+    }
+    #copyright-bar .cp-company {
+      color: #ffcc00;
+      font-size: 9px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    #copyright-bar .cp-slogan {
+      color: #888;
+      font-size: 8px;
+      letter-spacing: 0.5px;
+    }
+
     #game-header {
       display: flex;
       align-items: center;
@@ -510,6 +533,11 @@
 
   <!-- ─── GAME SCREEN ─── -->
   <div id="game-screen">
+    <div id="copyright-bar">
+      <div class="cp-title">PAC-MAN RETRÔ</div>
+      <div class="cp-company">ProntaCorp S.A.</div>
+      <div class="cp-slogan">tecnologia com propósito humano</div>
+    </div>
     <div id="game-header">
       <span>🏆 <span id="score-display">0</span></span>
       <span>❤️ <span id="lives-display">3</span></span>

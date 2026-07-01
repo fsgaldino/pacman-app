@@ -310,6 +310,7 @@ class Game {
     this.fruitSpawnAnim = 0;
     this.fruitParticles = []; // partículas da fruta
     this.fruitEatEffects = []; // efeitos ao comer fruta
+    this._fruitOriginalTile = null; // tile original sob a fruta
     this._readySoundPlayed = false;
     this.powerUpSpeedTimer = 0; this.powerUpShieldTimer = 0;
     this.powerUpSpeedActive = false; this.powerUpShieldActive = false;
@@ -334,6 +335,7 @@ class Game {
     this.fruitTimer = 0; this.fruitIndex = 0;
     this.fruitSpawnTimer = 0; this.fruitSpawnAnim = 0; this.fruitParticles = [];
     this.fruitEatEffects = [];
+    this._fruitOriginalTile = null;
     this.powerUpSpeedTimer = 0; this.powerUpShieldTimer = 0;
     this.powerUpSpeedActive = false; this.powerUpShieldActive = false;
     this.comboTimer = 0; this.comboCount = 0; this.comboMultiplier = 1;
@@ -415,9 +417,10 @@ class Game {
     this.animFrame = requestAnimationFrame(this.loop);
   }
 
-  togglePause() {
+  async togglePause() {
     if (this.state === 'PLAYING') {
-      this.state = 'PAUSED'; this._saveGame(); this.hideOverlay(true); this._fetchPauseScores();
+      this.state = 'PAUSED'; this._saveGame(); this.hideOverlay(true);
+      await this._fetchPauseScores();
     } else if (this.state === 'PAUSED') {
       this.hideOverlay(true); this.state = 'PLAYING'; this.inputQueue = [];
     }
@@ -563,8 +566,7 @@ class Game {
         this.fruitSpawnTimer = 0;
         this._spawnFruit();
       }
-    }
-    if (this.fruit) {
+    }      if (this.fruit) {
       this.fruitTimer -= dt;
       if (this.fruitSpawnAnim > 0) this.fruitSpawnAnim -= dt;
       // Atualiza partículas da fruta
@@ -587,7 +589,14 @@ class Game {
         e.life -= dt * 2.0;
         if (e.life <= 0) this.fruitEatEffects.splice(i, 1);
       }
-      if (this.fruitTimer <= 0) { this.fruit = null; this.fruitSpawnTimer = 0; this.fruitParticles = []; }
+      if (this.fruitTimer <= 0) {
+        // Restaura tile original quando fruta expira (não quando é comida)
+        if (this._fruitOriginalTile != null) {
+          this.map[this.fruitRow][this.fruitCol] = this._fruitOriginalTile;
+          this._fruitOriginalTile = null;
+        }
+        this.fruit = null; this.fruitSpawnTimer = 0; this.fruitParticles = [];
+      }
       else {
         const dx = Math.abs(this.pacman.px - fx); const dy = Math.abs(this.pacman.py - fy);
         if (dx < TS * 0.7 && dy < TS * 0.7) {
@@ -696,6 +705,9 @@ class Game {
           candidates.push({ c, r });
     if (candidates.length === 0) return;
     const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    // Salva tile original e limpa para a fruta aparecer limpa
+    this._fruitOriginalTile = this.map[pick.r][pick.c];
+    this.map[pick.r][pick.c] = TILE.EMPTY;
     this.fruit = FRUITS[this.fruitIndex];
     this.fruitCol = pick.c;
     this.fruitRow = pick.r;
@@ -968,7 +980,7 @@ class Game {
     if (this.state === 'GAMEOVER') this._renderCreditsCopyright(ctx, H - 16);
 
     if (this.state === 'IDLE') this._renderCreditsFooter(ctx);
-    if (this.state === 'PLAYING') this._renderCreditsFooter(ctx);
+    if (this.state === 'PLAYING') this._renderCreditsFooter(ctx, true);
   }
 
   drawPacman(ctx) {
@@ -1142,15 +1154,25 @@ class Game {
   }
 
   // ── Créditos ──
-  _renderCreditsFooter(ctx) {
+  _renderCreditsFooter(ctx, atTop = false) {
     const cx = W / 2;
-    ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0, H - 40, W, 40);
-    ctx.fillStyle = '#666'; ctx.font = '8px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('PAC-MAN RETRÔ', cx, H - 28);
-    ctx.fillStyle = '#ffcc00'; ctx.font = 'bold 9px monospace';
-    ctx.fillText('ProntaCorp S.A.', cx, H - 16);
-    ctx.fillStyle = '#888'; ctx.font = '8px monospace';
-    ctx.fillText('tecnologia com propósito humano', cx, H - 6);
+    if (atTop) {
+      ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0, 0, W, 40);
+      ctx.fillStyle = '#666'; ctx.font = '8px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('PAC-MAN RETRÔ', cx, 12);
+      ctx.fillStyle = '#ffcc00'; ctx.font = 'bold 9px monospace';
+      ctx.fillText('ProntaCorp S.A.', cx, 24);
+      ctx.fillStyle = '#888'; ctx.font = '8px monospace';
+      ctx.fillText('tecnologia com propósito humano', cx, 34);
+    } else {
+      ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(0, H - 40, W, 40);
+      ctx.fillStyle = '#666'; ctx.font = '8px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('PAC-MAN RETRÔ', cx, H - 28);
+      ctx.fillStyle = '#ffcc00'; ctx.font = 'bold 9px monospace';
+      ctx.fillText('ProntaCorp S.A.', cx, H - 16);
+      ctx.fillStyle = '#888'; ctx.font = '8px monospace';
+      ctx.fillText('tecnologia com propósito humano', cx, H - 6);
+    }
   }
   _renderCreditsCopyright(ctx, y) {
     const cx = W / 2;

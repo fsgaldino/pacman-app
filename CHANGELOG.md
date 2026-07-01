@@ -7,6 +7,27 @@ e este projeto adere ao [Semantic Versioning](https://semver.org/lang/pt-BR/).
 
 ---
 
+## [2.3.2] - 2026-06-30
+
+### Fixed
+
+#### 🐛 Copyright sobrepondo quadro de jogo
+- **Problema:** Texto de copyright (ProntaCorp S.A.) era renderizado dentro do canvas, sobrepondo a ação do jogo
+- **Solução:** Copyright movido do canvas para elemento HTML (`#copyright-bar`) posicionado acima do game-header, com CSS dedicado
+- **Impacto:** Copyright visível acima dos ícones e botões de opções, sem interferir no gameplay
+
+#### 🐛 Pellet fantasma ao comer fruta
+- **Problema:** Ao comer a fruta, a pastilha original (DOT/POWER) que estava naquele tile não era restaurada, permanecendo como EMPTY
+- **Solução:** Tile original (`_fruitOriginalTile`) agora é restaurado no mapa quando Pac-Man come a fruta
+- **Impacto:** Pastilha reaparece corretamente ao comer a fruta, mantendo a mecânica de dots intacta
+
+### Changed
+- Removidos métodos mortos `_renderCreditsFooter` e `_renderCreditsCopyright` do canvas
+- Removidas chamadas de copyright do canvas durante pause, intermission e game over
+- Créditos da ProntaCorp S.A. agora são parte da estrutura HTML, não do canvas
+
+---
+
 ## [2.3.1] - 2026-06-30
 
 ### Fixed

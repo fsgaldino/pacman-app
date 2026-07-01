@@ -13,7 +13,7 @@
 
 - [Roadmap de Versões](#roadmap-de-versões)
 - [Arquitetura](#arquitetura)
-- [Funcionalidades](#funcionalidades-v22)
+- [Funcionalidades](#funcionalidades)
 - [Galeria](#galeria)
 - [Changelog Detalhado](#changelog-detalhado)
 - [Pré-requisitos](#pré-requisitos)
@@ -188,7 +188,7 @@ v0.9 (Beta)          v1.0 (Funcional)             v2.0                         v
 
 ---
 
-## 🖼️ Galeria
+## Galeria
 
 Capturas de tela do jogo em diferentes estados. Para gerar as screenshots, execute o servidor (`npm start`) e use o script `scripts/capture-screenshots.js` ou registre manualmente via DevTools.
 
